@@ -316,21 +316,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Ajuste para que el video parezca un escáner y ocupe el ancho correcto */
-        #camera-container {
-            position: relative;
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            border-radius: 0.5rem;
-            overflow: hidden;
-            background-color: #000;
-        }
-        #camera {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
         .modal {
             display: none;
             position: fixed;
@@ -367,11 +352,23 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans antialiased pb-20">
 
-    <!-- Modal para ver/editar paciente -->
-    <div id="patientModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="modalContent"></div>
+    <!-- Banner de éxito al crear paciente -->
+    <div id="success-banner" class="hidden max-w-6xl mx-auto p-4 sm:p-6 pt-4">
+        <div class="bg-green-100 border border-green-300 text-green-700 px-4 py-3 rounded-lg flex items-center justify-between">
+            <span><i class="fas fa-check-circle mr-2"></i> Paciente registrado correctamente.</span>
+            <button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-green-700 hover:text-green-900">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Banner de eliminación -->
+    <div id="deleted-banner" class="hidden max-w-6xl mx-auto p-4 sm:p-6 pt-4">
+        <div class="bg-orange-100 border border-orange-300 text-orange-700 px-4 py-3 rounded-lg flex items-center justify-between">
+            <span><i class="fas fa-check-circle mr-2"></i> Paciente eliminado correctamente.</span>
+            <button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-orange-700 hover:text-orange-900">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
 
@@ -403,82 +400,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
                         </div>
                     </div>
                     <div class="flex items-end">
-                        <button id="btn-new-patient" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
+                        <a href="nuevo_paciente.php" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 inline-block">
                             <i class="fas fa-plus mr-1"></i> Nuevo Paciente
-                        </button>
+                        </a>
                     </div>
                 </div>
 
                 <!-- Listado de pacientes -->
                 <div id="patientsList" class="space-y-4">
                     <!-- Los pacientes se cargarán aquí dinámicamente -->
-                </div>
-
-                <!-- Sección para nuevo paciente (oculta por defecto) -->
-                <div id="newPatientSection" class="hidden">
-                    <hr class="my-6">
-                    <h2 class="text-lg font-semibold mb-4"><i class="fas fa-user-plus mr-2"></i> Registrar Nuevo Paciente</h2>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                            <input type="text" id="nombre" class="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ej. Juan">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
-                            <input type="text" id="apellido" class="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ej. Pérez">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Cédula de Identidad</label>
-                            <input type="text" id="cedula" class="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ej. 12345678">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Médico Tratante</label>
-                            <input type="text" id="medico" class="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ej. Dr. Silva">
-                        </div>
-                    </div>
-
-                    <!-- Sección de Cámara -->
-                    <div class="text-center mb-4">
-                        <h3 class="text-lg font-semibold mb-2"><i class="fas fa-camera text-blue-600"></i> Escáner de Documentos</h3>
-                        <button id="btn-start-camera" class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-md transition duration-200">
-                            <i class="fas fa-video mr-1"></i> Iniciar Cámara
-                        </button>
-                    </div>
-
-                    <div id="camera-container" class="hidden mb-4 shadow-inner">
-                        <video id="camera" autoplay playsinline></video>
-                        <div class="absolute inset-0 border-4 border-blue-500/30 m-4 rounded pointer-events-none"></div>
-                    </div>
-
-                    <div class="text-center hidden" id="capture-controls">
-                        <button id="btn-capture" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-lg transition duration-200 transform hover:scale-105">
-                            <i class="fas fa-camera mr-2"></i> Tomar Foto
-                        </button>
-                    </div>
-
-                    <!-- Canvas oculto -->
-                    <canvas id="canvas" class="hidden"></canvas>
-
-                    <!-- Galería Preliminar -->
-                    <div class="mt-8" id="gallery-section" style="display: none;">
-                        <h3 class="text-md font-semibold text-gray-700 mb-3 border-b pb-2">Fotos Capturadas (<span id="photo-count">0</span>)</h3>
-                        <div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        </div>
-                    </div>
-
-                    <!-- Botones de acción -->
-                    <div class="mt-8 text-center border-t pt-6" id="save-section" style="display: none;">
-                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                            <button id="btn-save-all" class="bg-green-600 hover:bg-green-700 text-white font-bold px-8 py-3 rounded-md shadow-md text-lg transition duration-200">
-                                <i class="fas fa-save mr-2"></i> Guardar Paciente
-                            </button>
-                            <button id="btn-cancel-new" class="bg-gray-500 hover:bg-gray-600 text-white font-bold px-8 py-3 rounded-md shadow-md text-lg transition duration-200">
-                                <i class="fas fa-times mr-2"></i> Cancelar
-                            </button>
-                        </div>
-                        <p id="status-msg" class="mt-3 text-sm font-medium"></p>
-                    </div>
                 </div>
 
                 <!-- Sección para agregar fotos a paciente existente (oculta por defecto) -->
@@ -538,13 +468,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
         // VARIABLES GLOBALES
         // ==========================================
         
-        // Elementos del DOM
-        const video = document.getElementById('camera');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const gallery = document.getElementById('gallery');
-        const capturedPhotos = [];
-        
         // Para agregar fotos a paciente existente
         const videoAdd = document.getElementById('camera-add');
         const canvasAdd = document.getElementById('canvas-add');
@@ -552,18 +475,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
         const galleryAdd = document.getElementById('gallery-add');
         const capturedPhotosAdd = [];
         
-        // Botones y contenedores
-        const btnStartCamera = document.getElementById('btn-start-camera');
-        const btnCapture = document.getElementById('btn-capture');
-        const btnSaveAll = document.getElementById('btn-save-all');
-        const cameraContainer = document.getElementById('camera-container');
-        const captureControls = document.getElementById('capture-controls');
-        const gallerySection = document.getElementById('gallery-section');
-        const saveSection = document.getElementById('save-section');
-        const photoCountEl = document.getElementById('photo-count');
-        const statusMsg = document.getElementById('status-msg');
-        
-        // Para agregar fotos
+        // Botones y contenedores para agregar fotos
         const btnStartCameraAdd = document.getElementById('btn-start-camera-add');
         const btnCaptureAdd = document.getElementById('btn-capture-add');
         const btnSaveAdd = document.getElementById('btn-save-add');
@@ -575,22 +487,16 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
         const statusMsgAdd = document.getElementById('status-msg-add');
         
         // Secciones
-        const newPatientSection = document.getElementById('newPatientSection');
         const addPhotosSection = document.getElementById('addPhotosSection');
         const patientsList = document.getElementById('patientsList');
         const searchInput = document.getElementById('searchInput');
-        const btnNewPatient = document.getElementById('btn-new-patient');
-        const btnCancelNew = document.getElementById('btn-cancel-new');
         const btnCancelAdd = document.getElementById('btn-cancel-add');
         
         // Modales
-        const patientModal = document.getElementById('patientModal');
         const confirmModal = document.getElementById('confirmModal');
-        const modalContent = document.getElementById('modalContent');
         const confirmContent = document.getElementById('confirmContent');
         
         // Streams de cámara
-        let stream = null;
         let streamAdd = null;
         
         // ==========================================
@@ -624,37 +530,26 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
         }
         
         function capturePhoto(videoElement, canvasElement, ctxElement, photosArray, updateGalleryFn) {
-            // Efecto de flash visual rápido
             videoElement.parentElement.style.opacity = '0.3';
             setTimeout(() => videoElement.parentElement.style.opacity = '1', 150);
             
-            // Ajustar canvas a la resolución real del video
             canvasElement.width = videoElement.videoWidth;
             canvasElement.height = videoElement.videoHeight;
-            
-            // Dibujar el fotograma actual en el canvas
             ctxElement.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
             
-            // Convertir a Base64 (JPG al 70% de calidad)
             const base64Data = canvasElement.toDataURL('image/jpeg', 0.7);
-            
-            // Guardar en el arreglo
             photosArray.push(base64Data);
-            
-            // Actualizar UI
             updateGalleryFn();
         }
         
-        function updateGallery(photosArray, galleryElement, countElement, gallerySection, saveSection) {
-            gallerySection.style.display = 'block';
-            saveSection.style.display = 'block';
-            countElement.textContent = photosArray.length;
+        function updateGalleryAdd() {
+            gallerySectionAdd.style.display = 'block';
+            saveSectionAdd.style.display = 'block';
+            photoCountElAdd.textContent = capturedPhotosAdd.length;
             
-            // Limpiar galería actual
-            galleryElement.innerHTML = '';
+            galleryAdd.innerHTML = '';
             
-            // Renderizar miniaturas
-            photosArray.forEach((photoData, index) => {
+            capturedPhotosAdd.forEach((photoData, index) => {
                 const imgWrap = document.createElement('div');
                 imgWrap.className = 'relative rounded overflow-hidden border border-gray-200 shadow-sm aspect-[3/4]';
                 
@@ -666,48 +561,23 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
                 deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
                 deleteBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-80 hover:opacity-100';
                 deleteBtn.onclick = () => {
-                    photosArray.splice(index, 1);
-                    updateGallery(photosArray, galleryElement, countElement, gallerySection, saveSection);
-                    if(photosArray.length === 0) {
-                        saveSection.style.display = 'none';
-                        gallerySection.style.display = 'none';
+                    capturedPhotosAdd.splice(index, 1);
+                    updateGalleryAdd();
+                    if (capturedPhotosAdd.length === 0) {
+                        saveSectionAdd.style.display = 'none';
+                        gallerySectionAdd.style.display = 'none';
                     }
                 };
                 
                 imgWrap.appendChild(img);
                 imgWrap.appendChild(deleteBtn);
-                galleryElement.appendChild(imgWrap);
+                galleryAdd.appendChild(imgWrap);
             });
         }
         
         // ==========================================
         // FUNCIONES DE PACIENTES
         // ==========================================
-        
-        async function loadPatients(search = '') {
-            try {
-                const url = new URL(window.location.href);
-                if (search) {
-                    url.searchParams.set('search', search);
-                }
-                
-                const response = await fetch(url.toString());
-                const html = await response.text();
-                
-                // Extraer los datos de pacientes del HTML (ya que PHP los inyecta)
-                // En su lugar, haremos una petición específica para obtener los pacientes
-                const patientsResponse = await fetch(`index.php?search=${encodeURIComponent(search)}`);
-                const patientsText = await patientsResponse.text();
-                
-                // Parsear el JSON de pacientes (lo agregaremos en el backend)
-                // Por ahora, recargamos la página
-                window.location.search = search ? `?search=${encodeURIComponent(search)}` : '';
-                
-            } catch (error) {
-                console.error("Error al cargar pacientes:", error);
-                alert("Error al cargar la lista de pacientes.");
-            }
-        }
         
         function renderPatients(pacientes) {
             if (pacientes.length === 0) {
@@ -739,12 +609,12 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
                         </div>
                         <div class="flex items-center gap-2 mt-4 sm:mt-0">
                             <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                                <i class="fas fa-images mr-1"></i> ${photoCount} documentos
+                                <i class="fas fa-images mr-1"></i> ${photoCount} docs
                             </span>
-                            <button onclick="viewPatient(${paciente.id})" 
+                            <a href="ver_paciente.php?id=${paciente.id}" 
                                     class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-sm transition">
                                 <i class="fas fa-eye"></i>
-                            </button>
+                            </a>
                             <button onclick="addPhotosToPatient(${paciente.id})" 
                                     class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-sm transition">
                                 <i class="fas fa-plus"></i>
@@ -761,231 +631,17 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
             });
         }
         
-        async function viewPatient(patientId) {
-            try {
-                const response = await fetch(`index.php?action=get_patient&id=${patientId}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    const paciente = data.patient;
-                    
-                    let html = `
-                        <h2 class="text-xl font-bold mb-4"><i class="fas fa-user mr-2"></i> ${paciente.nombre} ${paciente.apellido}</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div>
-                                <p><strong>Cédula:</strong> ${paciente.cedula}</p>
-                                <p><strong>Médico:</strong> ${paciente.medico_tratante}</p>
-                                <p><strong>Fecha de registro:</strong> ${new Date(paciente.fecha_registro).toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p><strong>Total documentos:</strong> ${paciente.fotos.length}</p>
-                            </div>
-                        </div>
-                        <hr class="my-4">
-                        <h3 class="text-lg font-semibold mb-3"><i class="fas fa-images mr-2"></i> Documentos</h3>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                    `;
-                    
-                    paciente.fotos.forEach(foto => {
-                        html += `
-                            <div class="relative rounded overflow-hidden border border-gray-200 shadow-sm aspect-[3/4]">
-                                <img src="${foto.ruta_foto}" class="w-full h-full object-cover" alt="Documento">
-                                <button onclick="confirmDeletePhoto(${foto.id}, ${paciente.id})" 
-                                        class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-80 hover:opacity-100">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        `;
-                    });
-                    
-                    html += `
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="editPatient(${paciente.id})" 
-                                    class="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded transition">
-                                <i class="fas fa-edit mr-1"></i> Editar Datos
-                            </button>
-                            <button onclick="addPhotosToPatient(${paciente.id})" 
-                                    class="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition">
-                                <i class="fas fa-plus mr-1"></i> Agregar Fotos
-                            </button>
-                        </div>
-                    `;
-                    
-                    modalContent.innerHTML = html;
-                    patientModal.style.display = 'block';
-                } else {
-                    alert(data.message || "Error al cargar los datos del paciente.");
-                }
-            } catch (error) {
-                console.error("Error al ver paciente:", error);
-                alert("Error al cargar los datos del paciente.");
-            }
-        }
-        
-        function editPatient(patientId) {
-            // Obtener el paciente y mostrar formulario de edición
-            fetch(`index.php?action=get_patient&id=${patientId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const paciente = data.patient;
-                        
-                        let html = `
-                            <h2 class="text-xl font-bold mb-4"><i class="fas fa-edit mr-2"></i> Editar Paciente</h2>
-                            <form id="editPatientForm" onsubmit="saveEditPatient(${paciente.id}, event)">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                        <input type="text" id="editNombre" value="${paciente.nombre}" 
-                                               class="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
-                                        <input type="text" id="editApellido" value="${paciente.apellido}" 
-                                               class="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Cédula</label>
-                                        <input type="text" value="${paciente.cedula}" 
-                                               class="w-full border border-gray-300 rounded-md p-2 bg-gray-100" disabled>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Médico Tratante</label>
-                                        <input type="text" id="editMedico" value="${paciente.medico_tratante}" 
-                                               class="w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500" required>
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
-                                        <i class="fas fa-save mr-1"></i> Guardar Cambios
-                                    </button>
-                                    <button type="button" onclick="closeModal()" 
-                                            class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition">
-                                        <i class="fas fa-times mr-1"></i> Cancelar
-                                    </button>
-                                </div>
-                            </form>
-                        `;
-                        
-                        modalContent.innerHTML = html;
-                        patientModal.style.display = 'block';
-                    } else {
-                        alert(data.message || "Error al cargar los datos del paciente.");
-                    }
-                })
-                .catch(error => {
-                    console.error("Error al editar paciente:", error);
-                    alert("Error al cargar los datos del paciente.");
-                });
-        }
-        
-        function saveEditPatient(patientId, event) {
-            event.preventDefault();
-            
-            const nombre = document.getElementById('editNombre').value;
-            const apellido = document.getElementById('editApellido').value;
-            const medico = document.getElementById('editMedico').value;
-            
-            if (!nombre || !apellido || !medico) {
-                alert("Por favor completa todos los campos.");
-                return;
-            }
-            
-            const formData = new URLSearchParams();
-            formData.append('action', 'edit_patient');
-            formData.append('paciente_id', patientId);
-            formData.append('nombre', nombre);
-            formData.append('apellido', apellido);
-            formData.append('medico', medico);
-            
-            fetch(window.location.href, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: formData.toString()
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    closeModal();
-                    loadPatients(searchInput.value);
-                } else {
-                    alert(data.message || "Error al actualizar los datos.");
-                }
-            })
-            .catch(error => {
-                console.error("Error al guardar cambios:", error);
-                alert("Error al guardar los cambios.");
-            });
-        }
-        
         function addPhotosToPatient(patientId) {
-            // Mostrar la sección para agregar fotos
             document.getElementById('currentPatientId').value = patientId;
-            newPatientSection.classList.add('hidden');
             addPhotosSection.classList.remove('hidden');
             
-            // Limpiar fotos anteriores
             capturedPhotosAdd.length = 0;
             galleryAdd.innerHTML = '';
             gallerySectionAdd.style.display = 'none';
             saveSectionAdd.style.display = 'none';
             
-            // Detener cámara si está activa
-            stopCamera(stream);
             stopCamera(streamAdd);
-            
-            // Scroll a la sección
             addPhotosSection.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function confirmDeletePhoto(photoId, patientId) {
-            confirmContent.innerHTML = `
-                <h2 class="text-xl font-bold mb-4"><i class="fas fa-exclamation-triangle mr-2 text-red-600"></i> Confirmar Eliminación</h2>
-                <p class="mb-6">¿Estás seguro de que deseas eliminar esta foto? Esta acción no se puede deshacer.</p>
-                <div class="flex gap-2">
-                    <button onclick="deletePhoto(${photoId}, ${patientId})" 
-                            class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded transition">
-                        <i class="fas fa-trash mr-1"></i> Eliminar
-                    </button>
-                    <button onclick="closeConfirmModal()" 
-                            class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition">
-                        <i class="fas fa-times mr-1"></i> Cancelar
-                    </button>
-                </div>
-            `;
-            confirmModal.style.display = 'block';
-        }
-        
-        function deletePhoto(photoId, patientId) {
-            const formData = new URLSearchParams();
-            formData.append('action', 'delete_photo');
-            formData.append('photo_id', photoId);
-            
-            fetch(window.location.href, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: formData.toString()
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    closeConfirmModal();
-                    viewPatient(patientId);
-                } else {
-                    alert(data.message || "Error al eliminar la foto.");
-                }
-            })
-            .catch(error => {
-                console.error("Error al eliminar foto:", error);
-                alert("Error al eliminar la foto.");
-            });
         }
         
         function confirmDeletePatient(patientId) {
@@ -1013,9 +669,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
             
             fetch(window.location.href, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: formData.toString()
             })
             .then(response => response.json())
@@ -1023,7 +677,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
                 if (data.success) {
                     alert(data.message);
                     closeConfirmModal();
-                    loadPatients(searchInput.value);
+                    reloadPatients();
                 } else {
                     alert(data.message || "Error al eliminar el paciente.");
                 }
@@ -1034,161 +688,48 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
             });
         }
         
-        function closeModal() {
-            patientModal.style.display = 'none';
-        }
-        
         function closeConfirmModal() {
             confirmModal.style.display = 'none';
         }
         
-        // Cerrar modales al hacer clic fuera
-        window.onclick = function(event) {
-            if (event.target == patientModal) {
-                closeModal();
-            }
-            if (event.target == confirmModal) {
-                closeConfirmModal();
-            }
+        function reloadPatients() {
+            const search = searchInput.value;
+            const searchParam = search ? `?search=${encodeURIComponent(search)}` : '';
+            window.location.search = searchParam;
         }
         
-        // ==========================================
-        // EVENT LISTENERS
-        // ==========================================
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            if (event.target == confirmModal) closeConfirmModal();
+        }
         
         // Búsqueda de pacientes
+        let searchTimeout;
         searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
             const search = this.value;
-            if (search.length > 2 || search.length === 0) {
-                loadPatients(search);
-            }
+            searchTimeout = setTimeout(() => {
+                reloadPatients();
+            }, 400);
         });
         
-        // Nuevo paciente
-        btnNewPatient.addEventListener('click', () => {
-            addPhotosSection.classList.add('hidden');
-            newPatientSection.classList.remove('hidden');
-            
-            // Limpiar formulario
-            document.getElementById('nombre').value = '';
-            document.getElementById('apellido').value = '';
-            document.getElementById('cedula').value = '';
-            document.getElementById('medico').value = '';
-            capturedPhotos.length = 0;
-            gallery.innerHTML = '';
-            gallerySection.style.display = 'none';
-            saveSection.style.display = 'none';
-            
-            // Detener cámaras
-            stopCamera(stream);
-            stopCamera(streamAdd);
-            
-            // Mostrar botón de cámara
-            btnStartCamera.classList.remove('hidden');
-            cameraContainer.classList.add('hidden');
-            captureControls.classList.add('hidden');
-            
-            newPatientSection.scrollIntoView({ behavior: 'smooth' });
+        // ==========================================
+        // EVENT LISTENERS - AGREGAR FOTOS
+        // ==========================================
+        
+        btnStartCameraAdd.addEventListener('click', async () => {
+            streamAdd = await startCamera(videoAdd, cameraContainerAdd, captureControlsAdd, btnStartCameraAdd);
         });
         
-        // Cancelar nuevo paciente
-        btnCancelNew.addEventListener('click', () => {
-            newPatientSection.classList.add('hidden');
-            stopCamera(stream);
+        btnCaptureAdd.addEventListener('click', () => {
+            capturePhoto(videoAdd, canvasAdd, ctxAdd, capturedPhotosAdd, updateGalleryAdd);
         });
         
-        // Cancelar agregar fotos
         btnCancelAdd.addEventListener('click', () => {
             addPhotosSection.classList.add('hidden');
             stopCamera(streamAdd);
         });
         
-        // Iniciar cámara para nuevo paciente
-        btnStartCamera.addEventListener('click', async () => {
-            stream = await startCamera(video, cameraContainer, captureControls, btnStartCamera);
-        });
-        
-        // Capturar foto para nuevo paciente
-        btnCapture.addEventListener('click', () => {
-            capturePhoto(video, canvas, ctx, capturedPhotos, () => {
-                updateGallery(capturedPhotos, gallery, photoCountEl, gallerySection, saveSection);
-            });
-        });
-        
-        // Guardar nuevo paciente
-        btnSaveAll.addEventListener('click', async () => {
-            const nombre = document.getElementById('nombre').value;
-            const apellido = document.getElementById('apellido').value;
-            const cedula = document.getElementById('cedula').value;
-            const medico = document.getElementById('medico').value;
-            
-            if (!nombre || !apellido || !cedula || !medico) {
-                alert("Por favor completa todos los campos del paciente.");
-                return;
-            }
-            if (capturedPhotos.length === 0) {
-                alert("No has tomado ninguna foto.");
-                return;
-            }
-            
-            btnSaveAll.disabled = true;
-            btnSaveAll.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
-            statusMsg.textContent = 'Procesando archivos y subiendo al servidor...';
-            statusMsg.className = "mt-3 text-sm font-medium text-blue-600";
-            
-            const formData = new URLSearchParams();
-            formData.append('action', 'save');
-            formData.append('nombre', nombre);
-            formData.append('apellido', apellido);
-            formData.append('cedula', cedula);
-            formData.append('medico', medico);
-            formData.append('fotos', JSON.stringify(capturedPhotos));
-            
-            try {
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: formData.toString()
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    statusMsg.textContent = '¡Paciente guardado con éxito!';
-                    statusMsg.className = "mt-3 text-sm font-bold text-green-600";
-                    
-                    setTimeout(() => {
-                        newPatientSection.classList.add('hidden');
-                        stopCamera(stream);
-                        loadPatients(searchInput.value);
-                    }, 1500);
-                } else {
-                    throw new Error(data.message);
-                }
-            } catch (error) {
-                console.error(error);
-                statusMsg.textContent = 'Error: ' + error.message;
-                statusMsg.className = "mt-3 text-sm font-bold text-red-600";
-                btnSaveAll.disabled = false;
-                btnSaveAll.innerHTML = '<i class="fas fa-save mr-2"></i> Guardar Paciente';
-            }
-        });
-        
-        // Iniciar cámara para agregar fotos
-        btnStartCameraAdd.addEventListener('click', async () => {
-            streamAdd = await startCamera(videoAdd, cameraContainerAdd, captureControlsAdd, btnStartCameraAdd);
-        });
-        
-        // Capturar foto para agregar a paciente existente
-        btnCaptureAdd.addEventListener('click', () => {
-            capturePhoto(videoAdd, canvasAdd, ctxAdd, capturedPhotosAdd, () => {
-                updateGallery(capturedPhotosAdd, galleryAdd, photoCountElAdd, gallerySectionAdd, saveSectionAdd);
-            });
-        });
-        
-        // Guardar fotos adicionales
         btnSaveAdd.addEventListener('click', async () => {
             const pacienteId = document.getElementById('currentPatientId').value;
             
@@ -1210,9 +751,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
             try {
                 const response = await fetch(window.location.href, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: formData.toString()
                 });
                 
@@ -1226,7 +765,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
                         addPhotosSection.classList.add('hidden');
                         stopCamera(streamAdd);
                         capturedPhotosAdd.length = 0;
-                        loadPatients(searchInput.value);
+                        reloadPatients();
                     }, 1500);
                 } else {
                     throw new Error(data.message);
@@ -1240,27 +779,42 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_patient' && isset($_GET['
             }
         });
         
-        // Cargar pacientes al inicio
+        // ==========================================
+        // INICIALIZACIÓN
+        // ==========================================
+        
         document.addEventListener('DOMContentLoaded', () => {
-            // Obtener pacientes del backend
             const search = new URLSearchParams(window.location.search).get('search') || '';
             searchInput.value = search;
             
-            // Renderizar pacientes con los datos que PHP ya inyectó
+            // Mostrar banner de éxito si se creó un paciente
+            const success = new URLSearchParams(window.location.search).get('success');
+            if (success === '1') {
+                document.getElementById('success-banner').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('success-banner').classList.add('hidden');
+                }, 5000);
+                window.history.replaceState({}, '', 'index.php');
+            }
+
+            // Mostrar banner si se eliminó un paciente
+            const deleted = new URLSearchParams(window.location.search).get('deleted');
+            if (deleted === '1') {
+                document.getElementById('deleted-banner').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('deleted-banner').classList.add('hidden');
+                }, 5000);
+                window.history.replaceState({}, '', 'index.php');
+            }
+            
             const pacientes = <?php echo json_encode($pacientes); ?>;
             renderPatients(pacientes);
         });
         
-        // Hacer funciones globales para los onclick
-        window.viewPatient = viewPatient;
-        window.editPatient = editPatient;
-        window.saveEditPatient = saveEditPatient;
+        // Hacer funciones globales
         window.addPhotosToPatient = addPhotosToPatient;
-        window.confirmDeletePhoto = confirmDeletePhoto;
-        window.deletePhoto = deletePhoto;
         window.confirmDeletePatient = confirmDeletePatient;
         window.deletePatient = deletePatient;
-        window.closeModal = closeModal;
         window.closeConfirmModal = closeConfirmModal;
     </script>
 </body>
