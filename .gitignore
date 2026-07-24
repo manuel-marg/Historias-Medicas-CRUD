@@ -1,0 +1,19 @@
+# Fotos e historias guardadas del servidor
+historias_guardadas/
+
+# Archivos de entorno y configuracion local
+.env
+*.local
+
+# Archivos de sistema operativo
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
